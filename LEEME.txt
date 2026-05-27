@@ -1,0 +1,28 @@
+FORMULARIO HINE INTERACTIVO
+===========================
+
+Abrir el archivo index.html con un navegador web moderno.
+
+La página funciona sin conexión a Internet y contiene localmente:
+- La vista de las cinco páginas de la proforma HINE original.
+- La plantilla PDF empleada para la descarga final.
+- La biblioteca necesaria para generar el PDF.
+
+Uso:
+1. Introduzca los datos obligatorios del examen: nombre y apellidos,
+   fecha de nacimiento, fecha del examen y edad gestacional al nacer
+   en semanas y días.
+2. Marque las respuestas, asimetrías y observaciones.
+3. Compruebe los resaltados en la vista previa.
+4. Pulse "Descargar PDF cumplimentado".
+
+La edad cronológica se obtiene a partir de las fechas. En menores
+nacidos antes de 37+0 semanas, la edad corregida descuenta de la
+edad cronológica el tiempo que faltaba hasta 40+0 semanas. Ambas
+edades se muestran en meses, semanas y días.
+
+El PDF generado mantiene la proforma original, muestra las opciones
+seleccionadas resaltadas y añade un anexo para conservar íntegramente
+las observaciones introducidas. Los datos del examen, el resumen,
+los subtotales y los comentarios generales quedan como campos PDF
+editables tras la descarga.

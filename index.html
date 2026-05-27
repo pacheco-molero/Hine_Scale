@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Formulario HINE - Proforma vES 08.12.18</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Proforma interactiva</p>
+        <h1>Hammersmith Infant Neurological Examination</h1>
+        <p class="subtitle">Versión española HINE (vES 08.12.18)</p>
+      </div>
+      <div class="toolbar" aria-label="Acciones del formulario">
+        <button class="button secondary" id="clearForm" type="button">Limpiar formulario</button>
+        <a class="button secondary view-pdf" id="viewLastPdf" href="#" target="_blank" rel="noopener" hidden>Ver último PDF generado</a>
+        <button class="button primary" id="downloadPdf" type="button">Descargar PDF cumplimentado</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="entry-panel" aria-label="Formulario de valoración">
+        <section class="card identity">
+          <div class="card-heading">
+            <h2>Datos del examen</h2>
+            <p>Los datos y las selecciones se incorporarán al PDF descargado.</p>
+          </div>
+          <p class="required-note"><span class="required-star">*</span> Campos obligatorios para calcular las edades y generar el PDF cumplimentado.</p>
+          <div class="field-grid">
+            <label>Nombre y apellidos <span class="required-label">Obligatorio</span>
+              <input id="patientName" type="text" autocomplete="name" required>
+            </label>
+            <label>Fecha de nacimiento <span class="required-label">Obligatorio</span>
+              <input id="birthDate" type="date" required>
+            </label>
+            <div class="gestational-field">
+              <span class="field-title">Edad gestacional al nacer <span class="required-label">Obligatorio</span></span>
+              <div class="gestational-inputs">
+                <label>Semanas
+                  <input id="gestationalWeeks" type="number" min="20" max="42" step="1" placeholder="Ej. 34" required>
+                </label>
+                <label>Días
+                  <input id="gestationalDays" type="number" min="0" max="6" step="1" placeholder="0-6" required>
+                </label>
+              </div>
+            </div>
+            <label>Fecha de examen <span class="required-label">Obligatorio</span>
+              <input id="examDate" type="date" required>
+            </label>
+            <label>Edad cronológica <span class="calculated-label">Calculada automáticamente</span>
+              <input id="chronologicalAge" class="calculated-output" type="text" readonly placeholder="Se calculará con las fechas">
+            </label>
+            <label>Edad corregida <span class="calculated-label">Calculada automáticamente</span>
+              <input id="correctedAge" class="calculated-output" type="text" readonly placeholder="Meses, semanas y días">
+            </label>
+            <label>Perímetro cefálico <span class="optional-label">Opcional</span>
+              <input id="headCircumference" type="text">
+            </label>
+          </div>
+          <div class="calculation-box">
+            <strong>Cómo se calcula la edad corregida</strong>
+            <p>El usuario introduce fecha de nacimiento, fecha del examen y edad gestacional al nacer. Si el nacimiento fue prematuro (antes de 37+0 semanas), la edad corregida es la edad cronológica menos el tiempo que faltaba hasta 40+0 semanas. Desde 37+0 semanas, coincide con la edad cronológica.</p>
+            <p id="ageCalculationStatus" class="calculation-status">Introduzca los campos obligatorios para calcular la edad corregida.</p>
+          </div>
+        </section>
+
+        <section class="card summary" aria-live="polite">
+          <div class="card-heading">
+            <h2>Resumen del examen</h2>
+            <p>Se actualiza al elegir respuestas de los ítems puntuables.</p>
+          </div>
+          <div class="totals">
+            <div><strong id="globalTotal">- / 78</strong><span>Puntuación global</span></div>
+            <div><strong id="asymmetryTotal">0</strong><span>Número de asimetrías</span></div>
+            <div><strong id="behaviourTotal">-</strong><span>Puntuación de comportamiento</span></div>
+          </div>
+          <div id="sectionTotals" class="section-totals"></div>
+          <label class="general-comments">Comentarios generales
+            <textarea id="generalComments" rows="5" placeholder="Añada aquí los comentarios generales del examen."></textarea>
+          </label>
+          <p class="instruction">Si una respuesta no es óptima, pero no es lo suficientemente pobre como para puntuar 1, seleccione puntuación 2.</p>
+        </section>
+
+        <div id="questionnaire"></div>
+      </section>
+
+      <aside class="preview-panel" aria-label="Vista previa de la proforma original">
+        <div class="preview-heading">
+          <h2>Vista previa del PDF</h2>
+          <p>Las opciones elegidas aparecen resaltadas sobre la proforma original.</p>
+        </div>
+        <div id="pdfPreview"></div>
+      </aside>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="vendor/pdf-lib.min.js"></script>
+    <script src="assets/template-pdf.js"></script>
+    <script src="app.js?v=calculated-corrected-age-3"></script>
+  </body>
+</html>
