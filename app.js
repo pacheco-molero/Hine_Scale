@@ -7,6 +7,8 @@
   const TERM_GESTATION_DAYS = 40 * 7;
   const PRETERM_LIMIT_DAYS = 37 * 7;
   const ITEM_NOTE_MAX_LENGTH = 30;
+  const MILESTONE_OBSERVED_MAX_LENGTH = 18;
+  const MILESTONE_AGE_MAX_LENGTH = 8;
 
   const columns = {
     cranial: { "3": [155, 86], "2": [241, 21], "1": [262, 85], "0": [347, 78], output: [425, 64], comment: [489, 71] },
@@ -379,20 +381,43 @@
         const asymmetry = asymmetryAllowed ?
           "<label class=\"asymmetry\"><input type=\"checkbox\" id=\"asym-" + row.id + "\"> Asimetría</label>" :
           "<span></span>";
+        let itemFields;
+        if (hasMilestoneAcquisitionFields(row)) {
+          itemFields = "<div class=\"milestone-fields\">" +
+            "<label>Lo observado <span class=\"field-hint\">2-3 palabras</span>" +
+            "<input id=\"observed-" + row.id + "\" type=\"text\" maxlength=\"" + MILESTONE_OBSERVED_MAX_LENGTH + "\" placeholder=\"Ej. estable\"></label>" +
+            "<label>Edad de adquisición <span class=\"field-hint\">Formato breve</span>" +
+            "<input id=\"acquisition-" + row.id + "\" type=\"text\" maxlength=\"" + MILESTONE_AGE_MAX_LENGTH + "\" placeholder=\"Ej. 7 m\"></label></div>";
+        } else if (row.section.id === "milestones") {
+          itemFields = "<p class=\"milestone-template-note\">La columna final de esta fila contiene la instrucción original de la proforma.</p>";
+        } else {
+          itemFields = "<label class=\"item-note\"><span class=\"item-note-heading\">Observaciones <span class=\"item-note-count\" id=\"count-" + row.id + "\">0 / " + ITEM_NOTE_MAX_LENGTH + "</span></span>" +
+            "<textarea id=\"note-" + row.id + "\" rows=\"2\" maxlength=\"" + ITEM_NOTE_MAX_LENGTH + "\" placeholder=\"Máx. " + ITEM_NOTE_MAX_LENGTH + " caracteres\"></textarea></label>";
+        }
         return "<article class=\"question\" data-row=\"" + row.id + "\">" +
-          "<h3>" + escapeMarkup(row.label) + "</h3>" +
+          "<div class=\"question-heading\"><h3>" + escapeMarkup(row.label) + "</h3>" +
+          (row.section.scored ? "<output class=\"item-score\" id=\"score-" + row.id + "\">Puntuación: -</output>" : "") + "</div>" +
           renderGuidance(row) +
           "<div class=\"choice-grid\">" + choices + "</div>" +
-          "<div class=\"item-footer\">" + asymmetry +
-          "<label class=\"item-note\"><span class=\"item-note-heading\">Observaciones <span class=\"item-note-count\" id=\"count-" + row.id + "\">0 / " + ITEM_NOTE_MAX_LENGTH + "</span></span>" +
-          "<textarea id=\"note-" + row.id + "\" rows=\"2\" maxlength=\"" + ITEM_NOTE_MAX_LENGTH + "\" placeholder=\"Máx. " + ITEM_NOTE_MAX_LENGTH + " caracteres\"></textarea></label></div></article>";
+          "<div class=\"item-footer\">" + asymmetry + itemFields + "</div></article>";
       }).join("");
-      return "<section class=\"card section-card\" aria-labelledby=\"title-" + section.id + "\">" +
-        "<h2 id=\"title-" + section.id + "\">" + escapeMarkup(section.title) + "</h2>" +
-        "<p class=\"section-meta\">" + escapeMarkup(section.subtitle) + "</p>" + questions + "</section>";
+      return "<details class=\"card section-card\" id=\"section-" + section.id + "\">" +
+        "<summary class=\"section-toggle\"><span class=\"section-heading\"><strong id=\"title-" + section.id + "\">" + escapeMarkup(section.title) + "</strong>" +
+        "<span class=\"section-meta\">" + escapeMarkup(section.subtitle) + "</span></span><span class=\"toggle-label\" aria-hidden=\"true\"></span></summary>" +
+        "<div class=\"section-content\" aria-labelledby=\"title-" + section.id + "\">" + questions +
+        "<div class=\"section-actions\"><button class=\"section-close\" type=\"button\" data-close-section=\"" + section.id + "\">Cerrar sección</button></div></div></details>";
     }).join("");
 
     questionnaire.addEventListener("input", updateView);
+    questionnaire.addEventListener("click", function (event) {
+      const closeButton = event.target.closest("[data-close-section]");
+      if (!closeButton) {
+        return;
+      }
+      const section = document.getElementById("section-" + closeButton.dataset.closeSection);
+      section.open = false;
+      section.querySelector(".section-toggle").focus();
+    });
     document.querySelectorAll(".identity input, #generalComments").forEach(function (input) {
       input.addEventListener("input", updateView);
     });
@@ -416,14 +441,32 @@
     return Boolean(input && input.checked);
   }
 
+  function hasMilestoneAcquisitionFields(row) {
+    return row.section.id === "milestones" && row.id !== "motorHead";
+  }
+
   function noteFor(row) {
-    return document.getElementById("note-" + row.id).value.trim().slice(0, ITEM_NOTE_MAX_LENGTH);
+    const field = document.getElementById("note-" + row.id);
+    return field ? field.value.trim().slice(0, ITEM_NOTE_MAX_LENGTH) : "";
+  }
+
+  function milestoneObservedFor(row) {
+    const field = document.getElementById("observed-" + row.id);
+    return field ? field.value.trim().slice(0, MILESTONE_OBSERVED_MAX_LENGTH) : "";
+  }
+
+  function milestoneAcquisitionFor(row) {
+    const field = document.getElementById("acquisition-" + row.id);
+    return field ? field.value.trim().slice(0, MILESTONE_AGE_MAX_LENGTH) : "";
   }
 
   function updateNoteCounters() {
     allRows.forEach(function (row) {
       const field = document.getElementById("note-" + row.id);
       const counter = document.getElementById("count-" + row.id);
+      if (!field || !counter) {
+        return;
+      }
       if (field.value.length > ITEM_NOTE_MAX_LENGTH) {
         field.value = field.value.slice(0, ITEM_NOTE_MAX_LENGTH);
       }
@@ -493,8 +536,45 @@
           top: row.top,
           height: row.height
         });
+        if (row.section.scored) {
+          const output = row.section.columns.output;
+          addPreviewValue(layer, answer.value, {
+            x: output[0],
+            width: output[1],
+            top: row.top,
+            height: row.height
+          }, "preview-row-score");
+        }
       }
-      if (isAsymmetric(row) || noteFor(row)) {
+      if (hasMilestoneAcquisitionFields(row)) {
+        addPreviewMarker(layer, "preview-milestone-entry", {
+          x: row.section.comment.x,
+          width: row.section.comment.width,
+          top: row.top,
+          height: row.height
+        }, "");
+        addPreviewValue(layer, milestoneObservedFor(row), {
+          x: row.section.comment.x + 3,
+          width: row.section.comment.width - 6,
+          top: row.top + 11,
+          height: 10
+        }, "preview-milestone-value");
+        addPreviewValue(layer, milestoneAcquisitionFor(row), {
+          x: row.section.comment.x + 3,
+          width: row.section.comment.width - 6,
+          top: row.top + 31,
+          height: 10
+        }, "preview-milestone-value");
+        if (isAsymmetric(row)) {
+          addPreviewMarker(layer, "preview-milestone-asym", {
+            x: row.section.comment.x + row.section.comment.width - 11,
+            width: 9,
+            top: row.top + 2,
+            height: 9
+          }, "A");
+        }
+      }
+      if (!hasMilestoneAcquisitionFields(row) && (isAsymmetric(row) || noteFor(row))) {
         addPreviewMarker(layer, noteFor(row) ? "preview-note" : "preview-asym", {
           x: commentColumn[0] === undefined ? commentColumn.x : commentColumn[0],
           width: commentColumn[1] === undefined ? commentColumn.width : commentColumn[1],
@@ -517,6 +597,7 @@
       let answered = 0;
       section.rows.forEach(function (row) {
         const answer = selectedOption(row);
+        document.getElementById("score-" + row.id).textContent = "Puntuación: " + (answer ? answer.value : "-");
         if (answer) {
           total += Number(answer.value);
           answered += 1;
@@ -850,6 +931,29 @@
     });
   }
 
+  function drawMilestoneEntry(page, row, regular, bold, rgb) {
+    if (!hasMilestoneAcquisitionFields(row)) {
+      return false;
+    }
+    const comment = row.section.comment;
+    const ink = rgb(0.07, 0.25, 0.34);
+    page.drawRectangle({
+      x: comment.x + 1,
+      y: PAGE_HEIGHT - row.top - row.height + 1,
+      width: comment.width - 2,
+      height: row.height - 2,
+      color: rgb(1, 1, 1)
+    });
+    drawTextTop(page, "Lo observado:", comment.x + 3, row.top + 4, 5, bold, ink);
+    drawTextTop(page, milestoneObservedFor(row), comment.x + 3, row.top + 12, 5, regular, ink);
+    drawTextTop(page, "Adquisición:", comment.x + 3, row.top + 24, 5, bold, ink);
+    drawTextTop(page, milestoneAcquisitionFor(row), comment.x + 3, row.top + 32, 5, regular, ink);
+    if (isAsymmetric(row)) {
+      drawTextTop(page, "A", comment.x + comment.width - 10, row.top + 4, 5, bold, ink);
+    }
+    return true;
+  }
+
   function drawAnswer(page, row, option, regular, bold, rgb) {
     if (option) {
       page.drawRectangle({
@@ -867,6 +971,9 @@
     if (row.section.scored && option) {
       const output = row.section.columns.output;
       drawTextTop(page, option.value, output[0] + output[1] / 2 - 2, row.top + Math.max(3, row.height / 2 - 5), 9, bold, rgb(0.07, 0.25, 0.34));
+    }
+    if (drawMilestoneEntry(page, row, regular, bold, rgb)) {
+      return;
     }
 
     const comment = row.section.columns ? row.section.columns.comment : row.section.comment;
