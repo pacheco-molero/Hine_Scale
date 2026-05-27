@@ -185,6 +185,152 @@
     return rows.concat(section.rows);
   }, []);
 
+  const itemGuidance = {
+    facial: {
+      procedure: "Observe la cara en reposo, al llorar y al ser estimulada; puede aprovechar la interacción inicial con los cuidadores.",
+      observe: "Gestos, sonrisa, llanto, mímica, boca abierta y cambios de expresión durante el examen.",
+      tip: "Si aprecia escasez de movimiento sin una dificultad concreta, considere puntuación 2."
+    },
+    eyes: {
+      procedure: "Presente un optotipo apropiado para la edad o una pelota brillante sin sonido a 20-30 cm, sin hablar y sin distractores visuales.",
+      observe: "Conjugación y simetría ocular durante trayectorias horizontal, vertical y circular, moviendo el objetivo lentamente y a velocidad constante.",
+      tip: "Compruebe que sigue con los ojos y no compensa moviendo la cabeza; anote estrabismo, nistagmo o ptosis."
+    },
+    visual: {
+      procedure: "Utilice un optotipo adecuado para la edad; si no fija la mirada, muévalo inicialmente para atraer su atención.",
+      observe: "Seguimiento completo del objetivo en trayectorias horizontal, vertical y circular, a 20-30 cm y sin estímulos competidores.",
+      tip: "No hable durante la maniobra para evitar que la respuesta se apoye en claves auditivas."
+    },
+    auditory: {
+      procedure: "Con la cabeza en línea media y el sonajero fuera del campo visual, estimule cada lado a 10-20 cm.",
+      observe: "Orientación o respuesta al sonido a ambos lados sin apoyo de caras u otros estímulos visuales.",
+      tip: "Es un ítem conductual, distinto del cribado auditivo; registre incidencias o uso de apoyos auditivos."
+    },
+    sucking: {
+      procedure: "Observe succión, masticación o deglución durante la alimentación; si es mayor, pregunte por tos o salivación excesiva.",
+      observe: "Variedad y eficacia de movimientos orales, boca abierta persistente, tos, atragantamiento o babeo excesivo.",
+      tip: "Si no puede observarlo, registre la información aportada por los cuidadores y cualquier preocupación."
+    },
+    head: {
+      procedure: "Observe en sedestación sobre superficie plana, ofreciendo solo el apoyo mínimo necesario si no se sienta solo.",
+      observe: "Postura predominante de la cabeza a lo largo de la valoración: elevada y en línea media para la respuesta óptima.",
+      tip: "La irritabilidad o el llanto pueden alterar la postura; consígnelo en conducta si condiciona la valoración."
+    },
+    trunk: {
+      procedure: "Valore el tronco en sedestación, evitando silla y ropa gruesa; ofrezca soporte mínimo si es necesario.",
+      observe: "Si se mantiene recto la mayor parte del tiempo o aparece flexión, hiperextensión o inclinación lateral.",
+      tip: "Use la postura predominante, no una posición momentánea."
+    },
+    arms: {
+      procedure: "Observe la actitud de ambos brazos en reposo durante la valoración postural.",
+      observe: "Rotación, flexión anómala, posturas distónicas o hemiparéticas y diferencias entre lados.",
+      tip: "Marque asimetría aunque la respuesta de ambos lados caiga en la misma puntuación."
+    },
+    hands: {
+      procedure: "Observe las manos durante el estado de reposo y la interacción espontánea.",
+      observe: "Pulgar aducto, mano cerrada y posiciones atípicas de dedos, distinguiendo si son intermitentes o persistentes.",
+      tip: "Anote expresamente las diferencias entre derecha e izquierda."
+    },
+    legs: {
+      procedure: "Según edad y habilidades, observe piernas en sedestación, supino y, si procede, bipedestación.",
+      observe: "Extensión o flexión de rodillas, rotaciones internas o externas y simetría en las posturas evaluadas.",
+      tip: "Si valora dos o tres posturas con puntuaciones diferentes, registre una valoración global/media y coméntelo."
+    },
+    feet: {
+      procedure: "Observe los pies en supino y bipedestación cuando sea posible, sin zapatos ni calcetines.",
+      observe: "Relación pie-pierna, puntillas, flexión de dedos u otras posturas intermitentes o persistentes.",
+      tip: "No confunda la posición del pie con la actitud postural de la cadera; valore asimetrías."
+    },
+    quantity: {
+      procedure: "Observe al niño en decúbito supino, preferiblemente despierto y tranquilo, durante el conjunto del examen.",
+      observe: "Cantidad global de movimientos espontáneos: normal, excesiva/lenta o mínima/ausente.",
+      tip: "Si el estado del niño no permite una observación válida, indíquelo en la sección de conducta."
+    },
+    quality: {
+      procedure: "Observe la actividad motora espontánea del cuerpo entero durante la valoración, no solo brazos o piernas.",
+      observe: "Variabilidad, fluidez, alternancia y complejidad; identifique movimientos bruscos, temblores, sincronía o patrones monótonos.",
+      tip: "Si no es óptimo pero tampoco encaja en puntuación 1, utilice puntuación 2."
+    },
+    scarf: {
+      procedure: "En supino, mantenga cabeza y tronco en línea media; cruce cada brazo sobre el pecho hasta notar resistencia.",
+      observe: "Posición del codo respecto a la línea media y diferencias entre ambos brazos.",
+      tip: "Sostenga el pecho del niño durante la maniobra y valore cada lado por separado."
+    },
+    shoulder: {
+      procedure: "En supino y con cabeza y tronco centrados, eleve los brazos junto a la cabeza para notar resistencia.",
+      observe: "Resistencia del hombro y del codo, comparando ambos lados simultáneamente.",
+      tip: "Evite movimientos circulares hacia la abducción; no es una prueba de rango completo de hombro."
+    },
+    pronation: {
+      procedure: "Con el brazo extendido, sosténgalo bajo el codo y gire el antebrazo desde la muñeca en pronación y supinación.",
+      observe: "Amplitud aproximada de 180 grados, resistencia y asimetrías.",
+      tip: "Realice y compare la maniobra en ambos miembros."
+    },
+    adductors: {
+      procedure: "En supino y, preferiblemente, con el pañal aflojado, abra ambas piernas desde la línea media.",
+      observe: "Ángulo alcanzado con rodillas extendidas y sin rotaciones compensatorias.",
+      tip: "Mantenga las piernas extendidas durante toda la maniobra."
+    },
+    popliteal: {
+      procedure: "En supino, flexione caderas sobre el abdomen y extienda las rodillas hasta notar resistencia.",
+      observe: "Ángulo entre muslo y pierna, manteniendo las nalgas sobre la superficie y comparando ambos lados.",
+      tip: "Si debe evaluar cada pierna por separado por movimiento o resistencia del niño, anótelo en observaciones."
+    },
+    ankle: {
+      procedure: "Con cadera y rodilla extendidas, estabilice la rótula y realice la dorsiflexión con la palma de la mano.",
+      observe: "Ángulo pie-pierna, resistencia que cede, respuesta voluntaria y asimetrías.",
+      tip: "Evite desencadenar presión plantar; si una resistencia cede de repente, descríbalo, sin valorarlo como clono."
+    },
+    pull: {
+      procedure: "Traccione suavemente desde las muñecas para llevar al niño a sentado, ofreciendo apoyo cefálico si lo necesita.",
+      observe: "Posición y control de la cabeza durante el ascenso.",
+      tip: "Si está irritable o llorando, repita cuando esté tranquilo; en hipotonía proteja la cabeza."
+    },
+    ventral: {
+      procedure: "Sostenga al niño horizontalmente alrededor del tronco en suspensión ventral.",
+      observe: "Postura de espalda, cabeza y miembros; seleccione el diagrama que mejor represente el tronco.",
+      tip: "Anote discrepancias de cabeza o miembros y repita tranquilo si somnolencia o llanto condicionan la respuesta."
+    },
+    protectiveArm: {
+      procedure: "Desde supino, estabilice la pelvis y traccione de un brazo para llevar al niño hacia sentado; repita al otro lado.",
+      observe: "Respuesta activa del brazo libre: apoyo con brazo y mano extendidos, semiflexión o flexión completa.",
+      tip: "No confunda con protección lateral en sedestación; extreme la precaución en niños muy hipotónicos."
+    },
+    vertical: {
+      procedure: "Sostenga al niño bajo las axilas sin que los pies toquen una superficie; puede estimular suavemente las plantas.",
+      observe: "Pataleo alternante y simétrico, pataleo pobre o asimétrico, ausencia de respuesta o postura en tijera.",
+      tip: "Si deja caer o rigidiza las piernas deliberadamente, descríbalo y considere no puntuar el ítem."
+    },
+    lateral: {
+      procedure: "Sujete de forma segura por las caderas e incline desde la vertical unos 45 grados hacia cada lado.",
+      observe: "Activación de cabeza, tronco y miembros del hemicuerpo que queda arriba.",
+      tip: "Evite una inclinación demasiado rápida o excesiva; anote si el peso o la colaboración dificultan la maniobra."
+    },
+    parachute: {
+      procedure: "Solo desde los 6 meses, sostenga por el tronco en vertical e incline rápidamente hacia delante.",
+      observe: "Respuesta de apoyo rápida y simétrica de ambos brazos, incluidas manos abiertas.",
+      tip: "Antes de los 6 meses la ausencia de respuesta se registra como 0; desde los 6 meses marque asimetría si procede."
+    },
+    tendons: {
+      procedure: "Con el miembro relajado en supino o sentado, explore bíceps, rodilla y tobillo con martillo pequeño o con el dedo.",
+      observe: "Reflejos fáciles, ligeramente exaltados, exaltados, clono o ausencia.",
+      tip: "En bíceps percuta sobre su pulgar colocado en el tendón; evite golpear rótula o talón."
+    }
+  };
+
+  const supplementalGuidance = {
+    milestones: {
+      procedure: "Registre el hito que mejor representa el desempeño observable del niño en la actividad indicada.",
+      observe: "Capacidad motora alcanzada y posibles diferencias entre lados cuando la tarea permita observarlas.",
+      tip: "Esta sección aporta información del desarrollo, pero no forma parte de la puntuación neurológica total."
+    },
+    behaviour: {
+      procedure: "Valore la conducta observada durante el examen y el modo en que influye en las respuestas.",
+      observe: "Nivel de alerta, estado emocional e interacción social predominantes.",
+      tip: "Registre aquí irritabilidad, llanto o somnolencia que hayan condicionado otros ítems; no puntúa en el total óptimo."
+    }
+  };
+
   const questionnaire = document.getElementById("questionnaire");
   const preview = document.getElementById("pdfPreview");
   const toast = document.getElementById("toast");
@@ -197,8 +343,33 @@
     });
   }
 
+  function guidanceFor(row) {
+    return itemGuidance[row.id] || supplementalGuidance[row.section.id];
+  }
+
+  function renderGuidance(row) {
+    const guidance = guidanceFor(row);
+    const imageWidth = PAGE_WIDTH;
+    const cropHeight = row.height;
+    const offsetPercent = (row.top / PAGE_HEIGHT * 100).toFixed(3);
+    return "<details class=\"item-guidance\"><summary>Cómo valorar este ítem</summary>" +
+      "<div class=\"guidance-grid\"><div class=\"guidance-copy\">" +
+      "<p><strong>Realice:</strong> " + escapeMarkup(guidance.procedure) + "</p>" +
+      "<p><strong>Observe:</strong> " + escapeMarkup(guidance.observe) + "</p>" +
+      "<p class=\"guidance-tip\"><strong>Nota:</strong> " + escapeMarkup(guidance.tip) + "</p></div>" +
+      "<figure class=\"guidance-thumbnail\" style=\"aspect-ratio:" + imageWidth + " / " + cropHeight + "\" aria-label=\"Referencia visual en la proforma\">" +
+      "<img src=\"assets/page-" + (row.section.page + 1) + ".png\" style=\"transform:translateY(-" + offsetPercent + "%)\" alt=\"Recorte orientativo de " + escapeMarkup(row.label) + "\">" +
+      "</figure></div></details>";
+  }
+
   function renderForm() {
-    questionnaire.innerHTML = allSections.map(function (section) {
+    const introduction = "<section class=\"card guidance-intro\" aria-labelledby=\"guidance-title\">" +
+      "<h2 id=\"guidance-title\">Apoyo para la valoración</h2>" +
+      "<p>Ayudas resumidas a partir de la <strong>Guía de recomendaciones para la evaluación con la HINE</strong>. No sustituyen la formación formal ni la hoja oficial.</p>" +
+      "<div class=\"guidance-principles\"><p><strong>Antes de comenzar:</strong> prepare juguetes apropiados para la edad, optotipo o pelota brillante sin sonido, sonajero suave, martillo de reflejos y cinta métrica.</p>" +
+      "<p><strong>Durante el examen:</strong> adapte el orden al estado del niño; si llora o se irrita, puede repetir un ítem hasta tres veces y registrar la respuesta predominante.</p>" +
+      "<p><strong>Registro:</strong> marque asimetrías y describa respuestas no representadas o dudosas en las observaciones.</p></div></section>";
+    questionnaire.innerHTML = introduction + allSections.map(function (section) {
       const asymmetryAllowed = section.scored || section.allowAsymmetry;
       const questions = section.rows.map(function (row) {
         const choices = row.options.map(function (option) {
@@ -210,6 +381,7 @@
           "<span></span>";
         return "<article class=\"question\" data-row=\"" + row.id + "\">" +
           "<h3>" + escapeMarkup(row.label) + "</h3>" +
+          renderGuidance(row) +
           "<div class=\"choice-grid\">" + choices + "</div>" +
           "<div class=\"item-footer\">" + asymmetry +
           "<label class=\"item-note\"><span class=\"item-note-heading\">Observaciones <span class=\"item-note-count\" id=\"count-" + row.id + "\">0 / " + ITEM_NOTE_MAX_LENGTH + "</span></span>" +
