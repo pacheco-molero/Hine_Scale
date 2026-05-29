@@ -315,6 +315,47 @@ textarea:focus {
   font-size: 0.82rem;
 }
 
+.risk-box {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #cdddea;
+  border-left: 4px solid var(--brand);
+  border-radius: 0.7rem;
+  color: #28445c;
+  background: #f7fbfe;
+}
+
+.risk-box strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #0f3f59;
+}
+
+.risk-box p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.risk-high {
+  border-color: #f0c1b8;
+  border-left-color: #c93d2d;
+  background: #fff4f1;
+}
+
+.risk-high strong {
+  color: #9f281b;
+}
+
+.risk-low {
+  border-color: #b9dbc7;
+  border-left-color: #2d9152;
+  background: #f2fbf5;
+}
+
+.risk-low strong {
+  color: #1d6b39;
+}
+
 .general-comments textarea {
   resize: vertical;
   min-height: 6rem;
@@ -327,6 +368,40 @@ textarea:focus {
   color: #47576c;
   background: #fff9e8;
   font-size: 0.88rem;
+}
+
+.exam-progress {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.exam-progress h2 {
+  margin: 0 0 0.2rem;
+  color: var(--brand-dark);
+  font-size: 1.05rem;
+}
+
+.exam-progress p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.progress-track {
+  height: 0.75rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4edf4;
+}
+
+.progress-track span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand), #4aa3c7);
+  transition: width 0.2s ease;
 }
 
 .section-card {
@@ -356,6 +431,27 @@ textarea:focus {
 .section-heading strong {
   color: var(--brand-dark);
   font-size: 1.16rem;
+}
+
+.section-summary {
+  display: grid;
+  justify-items: end;
+  gap: 0.32rem;
+  text-align: right;
+}
+
+.section-progress-summary {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  color: #3b5166;
+  background: #eef4f8;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.section-progress-summary.is-complete {
+  color: #1d6b39;
+  background: #e7f6ec;
 }
 
 .section-meta {
@@ -590,11 +686,29 @@ textarea:focus {
 }
 
 .asymmetry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin: 0;
+  border: 0;
+  padding: 0.58rem 0 0;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.asymmetry legend {
+  width: 100%;
+  margin-bottom: 0.1rem;
+  color: #344359;
+}
+
+.asymmetry label {
   flex-direction: row;
   align-items: center;
-  gap: 0.45rem;
-  padding-top: 0.62rem;
-  font-size: 0.83rem;
+  gap: 0.25rem;
+  color: #4a5a6f;
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
@@ -706,6 +820,11 @@ textarea:focus {
   font-weight: 700;
 }
 
+.preview-risk {
+  font-size: clamp(0.28rem, 0.64vw, 0.42rem);
+  font-weight: 700;
+}
+
 .preview-age {
   padding: 0 0.04rem;
   font-size: clamp(0.23rem, 0.52vw, 0.36rem);
@@ -730,6 +849,7 @@ textarea:focus {
 }
 
 .preview-asym,
+.preview-asym-slot,
 .preview-note {
   position: absolute;
   display: grid;
@@ -741,6 +861,11 @@ textarea:focus {
 }
 
 .preview-asym {
+  background: rgba(32, 90, 120, 0.17);
+}
+
+.preview-asym-slot {
+  border-right: 1px solid rgba(21, 59, 81, 0.22);
   background: rgba(32, 90, 120, 0.17);
 }
 

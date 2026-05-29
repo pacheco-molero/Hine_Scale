@@ -186,6 +186,9 @@
   const allRows = allSections.reduce(function (rows, section) {
     return rows.concat(section.rows);
   }, []);
+  const totalScoredRows = sections.reduce(function (count, section) {
+    return count + section.rows.length;
+  }, 0);
 
   const itemGuidance = {
     facial: {
@@ -370,7 +373,10 @@
       "<p>Ayudas resumidas a partir de la <strong>Guía de recomendaciones para la evaluación con la HINE</strong>. No sustituyen la formación formal ni la hoja oficial.</p>" +
       "<div class=\"guidance-principles\"><p><strong>Antes de comenzar:</strong> prepare juguetes apropiados para la edad, optotipo o pelota brillante sin sonido, sonajero suave, martillo de reflejos y cinta métrica.</p>" +
       "<p><strong>Durante el examen:</strong> adapte el orden al estado del niño; si llora o se irrita, puede repetir un ítem hasta tres veces y registrar la respuesta predominante.</p>" +
-      "<p><strong>Registro:</strong> marque asimetrías y describa respuestas no representadas o dudosas en las observaciones.</p></div></section>";
+      "<p><strong>Registro:</strong> marque asimetrías y describa respuestas no representadas o dudosas en las observaciones.</p></div></section>" +
+      "<section class=\"card exam-progress\" aria-labelledby=\"progress-title\">" +
+      "<div><h2 id=\"progress-title\">Progreso de la valoración</h2><p id=\"progressText\">0 de " + allRows.length + " ítems consultados.</p></div>" +
+      "<div class=\"progress-track\" aria-hidden=\"true\"><span id=\"progressBar\"></span></div></section>";
     questionnaire.innerHTML = introduction + allSections.map(function (section) {
       const asymmetryAllowed = section.scored || section.allowAsymmetry;
       const questions = section.rows.map(function (row) {
@@ -379,7 +385,10 @@
             "<strong>" + escapeMarkup(option.title) + "</strong>" + escapeMarkup(option.text) + "</label>";
         }).join("");
         const asymmetry = asymmetryAllowed ?
-          "<label class=\"asymmetry\"><input type=\"checkbox\" id=\"asym-" + row.id + "\"> Asimetría</label>" :
+          "<fieldset class=\"asymmetry\"><legend>Asimetría</legend>" +
+          "<label><input type=\"radio\" name=\"asym-" + row.id + "\" value=\"\" data-asym-default checked> No</label>" +
+          "<label><input type=\"radio\" name=\"asym-" + row.id + "\" value=\"D\"> Derecha</label>" +
+          "<label><input type=\"radio\" name=\"asym-" + row.id + "\" value=\"I\"> Izquierda</label></fieldset>" :
           "<span></span>";
         let itemFields;
         if (hasMilestoneAcquisitionFields(row)) {
@@ -403,7 +412,9 @@
       }).join("");
       return "<details class=\"card section-card\" id=\"section-" + section.id + "\">" +
         "<summary class=\"section-toggle\"><span class=\"section-heading\"><strong id=\"title-" + section.id + "\">" + escapeMarkup(section.title) + "</strong>" +
-        "<span class=\"section-meta\">" + escapeMarkup(section.subtitle) + "</span></span><span class=\"toggle-label\" aria-hidden=\"true\"></span></summary>" +
+        "<span class=\"section-meta\">" + escapeMarkup(section.subtitle) + "</span></span>" +
+        "<span class=\"section-summary\"><span class=\"section-progress-summary\" id=\"status-" + section.id + "\">Pendientes: " + section.rows.length + " / " + section.rows.length + "</span>" +
+        "<span class=\"toggle-label\" aria-hidden=\"true\"></span></span></summary>" +
         "<div class=\"section-content\" aria-labelledby=\"title-" + section.id + "\">" + questions +
         "<div class=\"section-actions\"><button class=\"section-close\" type=\"button\" data-close-section=\"" + section.id + "\">Cerrar sección</button></div></div></details>";
     }).join("");
@@ -437,8 +448,12 @@
   }
 
   function isAsymmetric(row) {
-    const input = document.getElementById("asym-" + row.id);
-    return Boolean(input && input.checked);
+    return Boolean(asymmetrySideFor(row));
+  }
+
+  function asymmetrySideFor(row) {
+    const selected = document.querySelector("input[name=\"asym-" + row.id + "\"]:checked");
+    return selected ? selected.value : "";
   }
 
   function hasMilestoneAcquisitionFields(row) {
@@ -492,7 +507,7 @@
     addPreviewMarker(layer, "preview-value " + (className || ""), rect, text);
   }
 
-  function updatePreviewData(totals, ageData) {
+  function updatePreviewData(totals, ageData, risk) {
     const firstPage = preview.querySelector("[data-page=\"0\"] .mark-layer");
     const patientValues = [
       { input: "patientName", rect: { x: 181, top: 81, width: 143, height: 13 } },
@@ -508,7 +523,8 @@
     addPreviewValue(firstPage, ageData.chronologicalCompact, { x: 251, top: 123, width: 40, height: 13 }, "preview-field preview-age");
     addPreviewValue(firstPage, ageData.correctedCompact, { x: 293, top: 123, width: 44, height: 13 }, "preview-field preview-age");
 
-    addPreviewValue(firstPage, totals.scoredAnswers ? String(totals.globalScore) : "", { x: 452, top: 188, width: 48, height: 15 }, "preview-total");
+    addPreviewValue(firstPage, totals.scoredAnswers ? String(totals.globalScore) : "", { x: 360, top: 188, width: 30, height: 15 }, "preview-total");
+    addPreviewValue(firstPage, risk.pdfLabel, { x: 395, top: 188, width: 105, height: 15 }, "preview-risk");
     addPreviewValue(firstPage, String(totals.asymmetries), { x: 452, top: 212, width: 48, height: 15 }, "preview-total");
     addPreviewValue(firstPage, totals.behaviourAnswers ? String(totals.behaviour) : "", { x: 452, top: 236, width: 48, height: 15 }, "preview-total");
 
@@ -520,11 +536,11 @@
     addPreviewValue(firstPage, document.getElementById("generalComments").value.trim(), { x: 92, top: 377, width: 406, height: 28 }, "preview-comments");
   }
 
-  function updatePreviewHighlights(totals, ageData) {
+  function updatePreviewHighlights(totals, ageData, risk) {
     preview.querySelectorAll(".mark-layer").forEach(function (layer) {
       layer.innerHTML = "";
     });
-    updatePreviewData(totals, ageData);
+    updatePreviewData(totals, ageData, risk);
     allRows.forEach(function (row) {
       const layer = preview.querySelector("[data-page=\"" + row.section.page + "\"] .mark-layer");
       const answer = selectedOption(row);
@@ -565,22 +581,36 @@
           top: row.top + 31,
           height: 10
         }, "preview-milestone-value");
-        if (isAsymmetric(row)) {
+        const milestoneSide = asymmetrySideFor(row);
+        if (milestoneSide) {
           addPreviewMarker(layer, "preview-milestone-asym", {
             x: row.section.comment.x + row.section.comment.width - 11,
             width: 9,
             top: row.top + 2,
             height: 9
-          }, "A");
+          }, milestoneSide);
         }
       }
       if (!hasMilestoneAcquisitionFields(row) && (isAsymmetric(row) || noteFor(row))) {
-        addPreviewMarker(layer, noteFor(row) ? "preview-note" : "preview-asym", {
-          x: commentColumn[0] === undefined ? commentColumn.x : commentColumn[0],
-          width: commentColumn[1] === undefined ? commentColumn.width : commentColumn[1],
-          top: row.top,
-          height: row.height
-        }, (isAsymmetric(row) ? "A" : "") + (isAsymmetric(row) && noteFor(row) ? "\n" : "") + noteFor(row));
+        const side = asymmetrySideFor(row);
+        const commentX = commentColumn[0] === undefined ? commentColumn.x : commentColumn[0];
+        const commentWidth = commentColumn[1] === undefined ? commentColumn.width : commentColumn[1];
+        if (side) {
+          addPreviewMarker(layer, noteFor(row) ? "preview-asym-slot" : "preview-asym", {
+            x: commentX,
+            width: noteFor(row) ? 11 : commentWidth,
+            top: row.top,
+            height: row.height
+          }, side);
+        }
+        if (noteFor(row)) {
+          addPreviewMarker(layer, "preview-note", {
+            x: commentX + (side ? 12 : 0),
+            width: commentWidth - (side ? 12 : 0),
+            top: row.top,
+            height: row.height
+          }, noteFor(row));
+        }
       }
     });
   }
@@ -633,15 +663,121 @@
     document.getElementById("asymmetryTotal").textContent = String(asymmetries);
     document.getElementById("behaviourTotal").textContent = behaviourAnswers ? String(behaviour) : "-";
     document.getElementById("sectionTotals").innerHTML = badges.join("");
+    updateSectionProgress(sectionScores, behaviour, behaviourAnswers);
 
     return { globalScore: globalScore, scoredAnswers: scoredAnswers, asymmetries: asymmetries, behaviour: behaviour, behaviourAnswers: behaviourAnswers, sectionScores: sectionScores };
+  }
+
+  function updateSectionProgress(sectionScores, behaviour, behaviourAnswers) {
+    let totalAnswered = 0;
+    allSections.forEach(function (section) {
+      const answered = section.rows.filter(function (row) {
+        return Boolean(selectedOption(row));
+      }).length;
+      const pending = section.rows.length - answered;
+      totalAnswered += answered;
+      let text = "Pendientes: " + pending + " / " + section.rows.length;
+      if (section.scored) {
+        const value = sectionScores[section.id];
+        text += " · Total: " + (value.answered ? value.total + " / " + section.max : "- / " + section.max);
+      } else if (section.behaviour) {
+        text += " · Total: " + (behaviourAnswers ? behaviour : "-");
+      }
+      const status = document.getElementById("status-" + section.id);
+      if (status) {
+        status.textContent = text;
+        status.classList.toggle("is-complete", pending === 0);
+      }
+    });
+    const percent = allRows.length ? Math.round(totalAnswered / allRows.length * 100) : 0;
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    if (progressBar) {
+      progressBar.style.width = percent + "%";
+    }
+    if (progressText) {
+      progressText.textContent = totalAnswered + " de " + allRows.length + " ítems consultados (" + percent + "%).";
+    }
+  }
+
+  function cutoffForCorrectedAge(ageData) {
+    if (!ageData.valid || !ageData.correctedParts) {
+      return null;
+    }
+    const months = ageData.correctedParts.months;
+    if (months >= 12) {
+      return { monthLabel: "12 meses o más", points: 65 };
+    }
+    if (months >= 9) {
+      return { monthLabel: "9 meses", points: 62 };
+    }
+    if (months >= 6) {
+      return { monthLabel: "6 meses", points: 59 };
+    }
+    if (months >= 3) {
+      return { monthLabel: "3 meses", points: 56 };
+    }
+    return null;
+  }
+
+  function riskResultFor(totals, ageData) {
+    const cutoff = cutoffForCorrectedAge(ageData);
+    if (!ageData.valid) {
+      return {
+        status: "pending",
+        title: "Riesgo de parálisis cerebral",
+        text: "Complete fecha de nacimiento, fecha de examen y edad gestacional para calcular la edad corregida.",
+        pdfLabel: ""
+      };
+    }
+    if (!cutoff) {
+      return {
+        status: "pending",
+        title: "Riesgo de parálisis cerebral",
+        text: "La edad corregida es inferior a 3 meses; no hay punto de corte configurado para esta edad.",
+        pdfLabel: ""
+      };
+    }
+    if (totals.scoredAnswers < totalScoredRows) {
+      return {
+        status: "pending",
+        title: "Riesgo de parálisis cerebral",
+        text: "Complete todos los ítems puntuables para aplicar el punto de corte de " + cutoff.monthLabel + " (<= " + cutoff.points + " puntos).",
+        pdfLabel: ""
+      };
+    }
+    if (totals.globalScore <= cutoff.points) {
+      return {
+        status: "high",
+        title: "Alto riesgo de parálisis cerebral",
+        text: "Puntuación global " + totals.globalScore + " / 78. Para " + cutoff.monthLabel + ", el punto de corte es <= " + cutoff.points + " puntos.",
+        pdfLabel: "Alto riesgo PC"
+      };
+    }
+    return {
+      status: "low",
+      title: "Sin criterio de alto riesgo por punto de corte",
+      text: "Puntuación global " + totals.globalScore + " / 78. Para " + cutoff.monthLabel + ", el punto de corte de alto riesgo es <= " + cutoff.points + " puntos.",
+      pdfLabel: "No alto riesgo PC"
+    };
+  }
+
+  function updateRiskSummary(totals, ageData) {
+    const risk = riskResultFor(totals, ageData);
+    const box = document.getElementById("riskBox");
+    document.getElementById("riskTitle").textContent = risk.title;
+    document.getElementById("riskText").textContent = risk.text;
+    box.classList.remove("risk-pending", "risk-high", "risk-low");
+    box.classList.add("risk-" + risk.status);
+    return risk;
   }
 
   function updateView() {
     updateNoteCounters();
     const ageData = updateCalculatedAges();
     const totals = updateTotals();
-    updatePreviewHighlights(totals, ageData);
+    const risk = updateRiskSummary(totals, ageData);
+    updatePreviewHighlights(totals, ageData, risk);
   }
 
   function safePdfText(value) {
@@ -767,6 +903,7 @@
       correctedLong: "",
       chronologicalCompact: "",
       correctedCompact: "",
+      correctedParts: null,
       gestationalCompact: gestation ? gestation.weeks + "sem " + gestation.days + "d" : ""
     };
     if (!birthDate || !examDate || !gestation) {
@@ -812,6 +949,7 @@
       chronologicalCompact: formatAgeCompact(chronological),
       correctedLong: correctedLong,
       correctedCompact: correctedCompact,
+      correctedParts: corrected,
       correctionDays: correctionDays,
       status: status
     };
@@ -916,18 +1054,20 @@
   }
 
   function drawItemNote(page, note, x, top, width, height, hasAsymmetry, font, color) {
-    const offset = hasAsymmetry ? 11 : 3;
+    const noteX = x + (hasAsymmetry ? 12 : 2);
+    const noteWidth = width - (hasAsymmetry ? 14 : 4);
+    const offset = 3;
     const availableHeight = height - offset - 2;
     let size = 4.3;
     let lineHeight = 4.9;
-    let lines = wrapText(note, font, size, width - 4);
+    let lines = wrapText(note, font, size, noteWidth);
     while (lines.length * lineHeight > availableHeight && size > 3.1) {
       size -= 0.2;
       lineHeight = size + 0.6;
-      lines = wrapText(note, font, size, width - 4);
+      lines = wrapText(note, font, size, noteWidth);
     }
     lines.forEach(function (line, index) {
-      drawTextTop(page, line, x + 2, top + offset + index * lineHeight, size, font, color);
+      drawTextTop(page, line, noteX, top + offset + index * lineHeight, size, font, color);
     });
   }
 
@@ -948,8 +1088,9 @@
     drawTextTop(page, milestoneObservedFor(row), comment.x + 3, row.top + 12, 5, regular, ink);
     drawTextTop(page, "Adquisición:", comment.x + 3, row.top + 24, 5, bold, ink);
     drawTextTop(page, milestoneAcquisitionFor(row), comment.x + 3, row.top + 32, 5, regular, ink);
-    if (isAsymmetric(row)) {
-      drawTextTop(page, "A", comment.x + comment.width - 10, row.top + 4, 5, bold, ink);
+    const milestoneSide = asymmetrySideFor(row);
+    if (milestoneSide) {
+      drawTextTop(page, milestoneSide, comment.x + comment.width - 10, row.top + 4, 6, bold, ink);
     }
     return true;
   }
@@ -980,8 +1121,10 @@
     const commentX = comment[0] === undefined ? comment.x : comment[0];
     const commentWidth = comment[1] === undefined ? comment.width : comment[1];
     const note = noteFor(row);
-    if (isAsymmetric(row)) {
-      drawTextTop(page, "A", commentX + 2, row.top + 3, 6, bold, rgb(0.07, 0.25, 0.34));
+    const side = asymmetrySideFor(row);
+    if (side) {
+      const sideX = note ? commentX + 3 : commentX + commentWidth / 2 - 3;
+      drawTextTop(page, side, sideX, row.top + Math.max(4, row.height / 2 - 5), 8, bold, rgb(0.07, 0.25, 0.34));
     }
     if (note) {
       drawItemNote(page, note, commentX, row.top, commentWidth, row.height, isAsymmetric(row), regular, rgb(0.07, 0.25, 0.34));
@@ -996,6 +1139,7 @@
     const ink = PDFLib.rgb(0.05, 0.2, 0.28);
     const pages = pdfDocument.getPages();
     const totals = updateTotals();
+    const risk = riskResultFor(totals, ageData);
     const form = pdfDocument.getForm();
 
     const patientFields = [
@@ -1013,7 +1157,8 @@
       addEditableField(form, pages[0], field.name, value, field.rect, regular, PDFLib.rgb, { fontSize: field.fontSize || 8 });
     });
 
-    addEditableField(form, pages[0], "Resumen.PuntuacionGlobal", totals.scoredAnswers ? String(totals.globalScore) : "", { x: 452, top: 188, width: 48, height: 15 }, bold, PDFLib.rgb, { fontSize: 10 });
+    addEditableField(form, pages[0], "Resumen.PuntuacionGlobal", totals.scoredAnswers ? String(totals.globalScore) : "", { x: 360, top: 188, width: 30, height: 15 }, bold, PDFLib.rgb, { fontSize: 10 });
+    addEditableField(form, pages[0], "Resumen.RiesgoParalisisCerebral", risk.pdfLabel, { x: 395, top: 188, width: 105, height: 15 }, regular, PDFLib.rgb, { fontSize: 7 });
     addEditableField(form, pages[0], "Resumen.NumeroAsimetrias", String(totals.asymmetries), { x: 452, top: 212, width: 48, height: 15 }, bold, PDFLib.rgb, { fontSize: 10 });
     addEditableField(form, pages[0], "Resumen.PuntuacionComportamiento", totals.behaviourAnswers ? String(totals.behaviour) : "", { x: 452, top: 236, width: 48, height: 15 }, bold, PDFLib.rgb, { fontSize: 10 });
 
@@ -1118,6 +1263,9 @@
       } else {
         field.value = "";
       }
+    });
+    document.querySelectorAll("[data-asym-default]").forEach(function (field) {
+      field.checked = true;
     });
     updateView();
     showToast("Formulario limpiado.");

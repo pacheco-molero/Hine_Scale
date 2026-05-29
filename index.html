@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Formulario HINE - Proforma vES 08.12.18</title>
-    <link rel="stylesheet" href="styles.css?v=section-footer-close-1">
+    <link rel="stylesheet" href="styles.css?v=progress-asym-1">
   </head>
   <body>
     <header class="topbar">
@@ -77,6 +77,10 @@
             <div><strong id="behaviourTotal">-</strong><span>Puntuación de comportamiento</span></div>
           </div>
           <div id="sectionTotals" class="section-totals"></div>
+          <div class="risk-box risk-pending" id="riskBox" aria-live="polite">
+            <strong id="riskTitle">Riesgo de parálisis cerebral</strong>
+            <p id="riskText">Complete la edad corregida y todos los ítems puntuables para interpretar el punto de corte.</p>
+          </div>
           <label class="general-comments">Comentarios generales
             <textarea id="generalComments" rows="5" placeholder="Añada aquí los comentarios generales del examen."></textarea>
           </label>
@@ -99,6 +103,6 @@
 
     <script src="vendor/pdf-lib.min.js"></script>
     <script src="assets/template-pdf.js"></script>
-    <script src="app.js?v=section-footer-close-1"></script>
+    <script src="app.js?v=progress-asym-1"></script>
   </body>
 </html>
